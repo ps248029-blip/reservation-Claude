@@ -1,0 +1,291 @@
+import React, { useState } from 'react';
+import { Calendar, Clock, User, Mail, Phone, CheckCircle } from 'lucide-react';
+
+export default function ReservationSystem() {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    date: '',
+    time: '',
+    people: '1',
+    requests: ''
+  });
+  const [reservations, setReservations] = useState([]);
+
+  const timeSlots = [
+    '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
+    '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
+    '19:00', '19:30', '20:00'
+  ];
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleStep1Next = () => {
+    if (!formData.date || !formData.time) {
+      alert('日付と時間を選択してください');
+      return;
+    }
+    setStep(2);
+  };
+
+  const handleSubmit = () => {
+    if (!formData.name) {
+      alert('お名前を入力してください');
+      return;
+    }
+    if (!formData.phone) {
+      alert('電話番号を入力してください');
+      return;
+    }
+    
+    const newReservation = {
+      ...formData,
+      id: Date.now(),
+      createdAt: new Date().toLocaleString('ja-JP')
+    };
+    setReservations(prev => [...prev, newReservation]);
+    setStep(3);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      date: '',
+      time: '',
+      people: '1',
+      requests: ''
+    });
+    setStep(1);
+  };
+
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="max-w-4xl mx-auto">
+        <header className="text-center mb-8 pt-8">
+          <h1 className="text-4xl font-bold text-indigo-900 mb-2">予約システム</h1>
+          <p className="text-gray-600">簡単・便利なオンライン予約</p>
+        </header>
+
+        {step === 1 && (
+          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <div className="flex items-center mb-6">
+              <Calendar className="w-8 h-8 text-indigo-600 mr-3" />
+              <h2 className="text-2xl font-bold text-gray-800">日時選択</h2>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  予約日 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleInputChange}
+                  min={getTodayDate()}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  予約時間 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="time"
+                  value={formData.time}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="">時間を選択してください</option>
+                  {timeSlots.map(slot => (
+                    <option key={slot} value={slot}>{slot}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  人数 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="people"
+                  value={formData.people}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                    <option key={num} value={num}>{num}名</option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                onClick={handleStep1Next}
+                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200"
+              >
+                次へ
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <div className="flex items-center mb-6">
+              <User className="w-8 h-8 text-indigo-600 mr-3" />
+              <h2 className="text-2xl font-bold text-gray-800">お客様情報</h2>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  お名前 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="山田太郎"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  電話番号 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  placeholder="090-1234-5678"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  メールアドレス (任意)
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="example@email.com"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ご要望・備考 (任意)
+                </label>
+                <textarea
+                  name="requests"
+                  value={formData.requests}
+                  onChange={handleInputChange}
+                  rows="3"
+                  placeholder="アレルギーやその他のご要望があればご記入ください"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setStep(1)}
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition duration-200"
+                >
+                  戻る
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200"
+                >
+                  予約を確定
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <div className="text-center">
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">予約が完了しました!</h2>
+              
+              <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left">
+                <h3 className="font-semibold text-lg mb-3 text-indigo-900">予約詳細</h3>
+                <div className="space-y-2 text-gray-700">
+                  <p><span className="font-medium">予約日:</span> {formData.date}</p>
+                  <p><span className="font-medium">時間:</span> {formData.time}</p>
+                  <p><span className="font-medium">人数:</span> {formData.people}名</p>
+                  <p><span className="font-medium">お名前:</span> {formData.name}</p>
+                  <p><span className="font-medium">電話:</span> {formData.phone}</p>
+                  {formData.email && (
+                    <p><span className="font-medium">メール:</span> {formData.email}</p>
+                  )}
+                  {formData.requests && (
+                    <p><span className="font-medium">ご要望:</span> {formData.requests}</p>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-gray-600 mb-6">
+                予約番号: {reservations.length > 0 ? reservations[reservations.length - 1].id : ''}
+              </p>
+
+              <button
+                onClick={resetForm}
+                className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200"
+              >
+                新しい予約をする
+              </button>
+            </div>
+          </div>
+        )}
+
+        {reservations.length > 0 && step === 3 && (
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">予約一覧</h2>
+            <div className="space-y-4">
+              {reservations.map(reservation => (
+                <div key={reservation.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-semibold text-lg text-indigo-900">{reservation.name}</p>
+                      <p className="text-gray-600">{reservation.date} {reservation.time} - {reservation.people}名</p>
+                      <p className="text-sm text-gray-500">電話: {reservation.phone}</p>
+                      <p className="text-sm text-gray-500">予約日時: {reservation.createdAt}</p>
+                    </div>
+                    <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full">
+                      予約済
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
