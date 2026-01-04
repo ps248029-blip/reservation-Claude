@@ -1,291 +1,330 @@
-import React, { useState } from 'react';
-import { Calendar, Clock, User, Mail, Phone, CheckCircle } from 'lucide-react';
-
-export default function ReservationSystem() {
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    date: '',
-    time: '',
-    people: '1',
-    requests: ''
-  });
-  const [reservations, setReservations] = useState([]);
-
-  const timeSlots = [
-    '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
-    '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
-    '19:00', '19:30', '20:00'
-  ];
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleStep1Next = () => {
-    if (!formData.date || !formData.time) {
-      alert('日付と時間を選択してください');
-      return;
-    }
-    setStep(2);
-  };
-
-  const handleSubmit = () => {
-    if (!formData.name) {
-      alert('お名前を入力してください');
-      return;
-    }
-    if (!formData.phone) {
-      alert('電話番号を入力してください');
-      return;
-    }
-    
-    const newReservation = {
-      ...formData,
-      id: Date.now(),
-      createdAt: new Date().toLocaleString('ja-JP')
-    };
-    setReservations(prev => [...prev, newReservation]);
-    setStep(3);
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      date: '',
-      time: '',
-      people: '1',
-      requests: ''
-    });
-    setStep(1);
-  };
-
-  const getTodayDate = () => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-4xl mx-auto">
-        <header className="text-center mb-8 pt-8">
-          <h1 className="text-4xl font-bold text-indigo-900 mb-2">予約システム</h1>
-          <p className="text-gray-600">簡単・便利なオンライン予約</p>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>予約システム</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .required {
+            color: red;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        textarea {
+            font-family: inherit;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+        .success {
+            text-align: center;
+        }
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #2ecc71;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            line-height: 80px;
+            font-size: 3rem;
+            color: white;
+        }
+        .details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .details h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .detail-row {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .reservation-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #2ecc71;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>予約システム</h1>
+            <p>簡単・便利なオンライン予約</p>
         </header>
 
-        {step === 1 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-            <div className="flex items-center mb-6">
-              <Calendar className="w-8 h-8 text-indigo-600 mr-3" />
-              <h2 className="text-2xl font-bold text-gray-800">日時選択</h2>
+        <div id="step1" class="card">
+            <h2>日時選択</h2>
+            <div class="form-group">
+                <label>予約日 <span class="required">*</span></label>
+                <input type="date" id="date">
             </div>
-
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  予約日 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  min={getTodayDate()}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  予約時間 <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="time"
-                  value={formData.time}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                >
-                  <option value="">時間を選択してください</option>
-                  {timeSlots.map(slot => (
-                    <option key={slot} value={slot}>{slot}</option>
-                  ))}
+            <div class="form-group">
+                <label>予約時間 <span class="required">*</span></label>
+                <select id="time">
+                    <option value="">時間を選択してください</option>
+                    <option>10:00</option>
+                    <option>10:30</option>
+                    <option>11:00</option>
+                    <option>11:30</option>
+                    <option>12:00</option>
+                    <option>12:30</option>
+                    <option>13:00</option>
+                    <option>13:30</option>
+                    <option>14:00</option>
+                    <option>14:30</option>
+                    <option>15:00</option>
+                    <option>15:30</option>
+                    <option>16:00</option>
+                    <option>16:30</option>
+                    <option>17:00</option>
+                    <option>17:30</option>
+                    <option>18:00</option>
+                    <option>18:30</option>
+                    <option>19:00</option>
+                    <option>19:30</option>
+                    <option>20:00</option>
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  人数 <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="people"
-                  value={formData.people}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                    <option key={num} value={num}>{num}名</option>
-                  ))}
+            </div>
+            <div class="form-group">
+                <label>人数 <span class="required">*</span></label>
+                <select id="people">
+                    <option>1名</option>
+                    <option>2名</option>
+                    <option>3名</option>
+                    <option>4名</option>
+                    <option>5名</option>
+                    <option>6名</option>
+                    <option>7名</option>
+                    <option>8名</option>
+                    <option>9名</option>
+                    <option>10名</option>
                 </select>
-              </div>
-
-              <button
-                onClick={handleStep1Next}
-                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200"
-              >
-                次へ
-              </button>
             </div>
-          </div>
-        )}
+            <button class="btn btn-primary" onclick="goStep2()">次へ</button>
+        </div>
 
-        {step === 2 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-            <div className="flex items-center mb-6">
-              <User className="w-8 h-8 text-indigo-600 mr-3" />
-              <h2 className="text-2xl font-bold text-gray-800">お客様情報</h2>
+        <div id="step2" class="card hidden">
+            <h2>お客様情報</h2>
+            <div class="form-group">
+                <label>お名前 <span class="required">*</span></label>
+                <input type="text" id="name" placeholder="山田太郎">
             </div>
-
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  お名前 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="山田太郎"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  電話番号 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="090-1234-5678"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  メールアドレス (任意)
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="example@email.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ご要望・備考 (任意)
-                </label>
-                <textarea
-                  name="requests"
-                  value={formData.requests}
-                  onChange={handleInputChange}
-                  rows="3"
-                  placeholder="アレルギーやその他のご要望があればご記入ください"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setStep(1)}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition duration-200"
-                >
-                  戻る
-                </button>
-                <button
-                  onClick={handleSubmit}
-                  className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200"
-                >
-                  予約を確定
-                </button>
-              </div>
+            <div class="form-group">
+                <label>電話番号 <span class="required">*</span></label>
+                <input type="tel" id="phone" placeholder="090-1234-5678">
             </div>
-          </div>
-        )}
+            <div class="form-group">
+                <label>メールアドレス (任意)</label>
+                <input type="email" id="email" placeholder="example@email.com">
+            </div>
+            <div class="form-group">
+                <label>ご要望・備考 (任意)</label>
+                <textarea id="requests" rows="3"></textarea>
+            </div>
+            <button class="btn btn-secondary" onclick="goStep1()">戻る</button>
+            <button class="btn btn-primary" onclick="submit()">予約を確定</button>
+        </div>
 
-        {step === 3 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-            <div className="text-center">
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">予約が完了しました!</h2>
-              
-              <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left">
-                <h3 className="font-semibold text-lg mb-3 text-indigo-900">予約詳細</h3>
-                <div className="space-y-2 text-gray-700">
-                  <p><span className="font-medium">予約日:</span> {formData.date}</p>
-                  <p><span className="font-medium">時間:</span> {formData.time}</p>
-                  <p><span className="font-medium">人数:</span> {formData.people}名</p>
-                  <p><span className="font-medium">お名前:</span> {formData.name}</p>
-                  <p><span className="font-medium">電話:</span> {formData.phone}</p>
-                  {formData.email && (
-                    <p><span className="font-medium">メール:</span> {formData.email}</p>
-                  )}
-                  {formData.requests && (
-                    <p><span className="font-medium">ご要望:</span> {formData.requests}</p>
-                  )}
+        <div id="step3" class="card hidden">
+            <div class="success">
+                <div class="success-icon">✓</div>
+                <h2>予約が完了しました!</h2>
+                <div class="details">
+                    <h3>予約詳細</h3>
+                    <div class="detail-row">予約日: <span id="c-date"></span></div>
+                    <div class="detail-row">時間: <span id="c-time"></span></div>
+                    <div class="detail-row">人数: <span id="c-people"></span></div>
+                    <div class="detail-row">お名前: <span id="c-name"></span></div>
+                    <div class="detail-row">電話: <span id="c-phone"></span></div>
+                    <div class="detail-row hidden" id="c-email-row">メール: <span id="c-email"></span></div>
+                    <div class="detail-row hidden" id="c-req-row">ご要望: <span id="c-req"></span></div>
                 </div>
-              </div>
-
-              <p className="text-gray-600 mb-6">
-                予約番号: {reservations.length > 0 ? reservations[reservations.length - 1].id : ''}
-              </p>
-
-              <button
-                onClick={resetForm}
-                className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200"
-              >
-                新しい予約をする
-              </button>
+                <p>予約番号: <strong id="c-id"></strong></p>
+                <button class="btn btn-primary" onclick="reset()">新しい予約をする</button>
             </div>
-          </div>
-        )}
+        </div>
 
-        {reservations.length > 0 && step === 3 && (
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">予約一覧</h2>
-            <div className="space-y-4">
-              {reservations.map(reservation => (
-                <div key={reservation.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-semibold text-lg text-indigo-900">{reservation.name}</p>
-                      <p className="text-gray-600">{reservation.date} {reservation.time} - {reservation.people}名</p>
-                      <p className="text-sm text-gray-500">電話: {reservation.phone}</p>
-                      <p className="text-sm text-gray-500">予約日時: {reservation.createdAt}</p>
-                    </div>
-                    <span className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full">
-                      予約済
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+        <div id="list" class="card hidden">
+            <h2>予約一覧</h2>
+            <div id="items"></div>
+        </div>
     </div>
-  );
-}
+
+    <script>
+        var data = [];
+        document.getElementById('date').min = new Date().toISOString().split('T')[0];
+
+        function goStep2() {
+            var d = document.getElementById('date').value;
+            var t = document.getElementById('time').value;
+            if (!d || !t) {
+                alert('日付と時間を選択してください');
+                return;
+            }
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+        }
+
+        function goStep1() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+        }
+
+        function submit() {
+            var n = document.getElementById('name').value;
+            var p = document.getElementById('phone').value;
+            if (!n) {
+                alert('お名前を入力してください');
+                return;
+            }
+            if (!p) {
+                alert('電話番号を入力してください');
+                return;
+            }
+
+            var res = {
+                id: Date.now(),
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                people: document.getElementById('people').value,
+                name: n,
+                phone: p,
+                email: document.getElementById('email').value,
+                requests: document.getElementById('requests').value
+            };
+
+            data.push(res);
+
+            document.getElementById('c-date').textContent = res.date;
+            document.getElementById('c-time').textContent = res.time;
+            document.getElementById('c-people').textContent = res.people;
+            document.getElementById('c-name').textContent = res.name;
+            document.getElementById('c-phone').textContent = res.phone;
+            document.getElementById('c-id').textContent = res.id;
+
+            if (res.email) {
+                document.getElementById('c-email').textContent = res.email;
+                document.getElementById('c-email-row').classList.remove('hidden');
+            }
+            if (res.requests) {
+                document.getElementById('c-req').textContent = res.requests;
+                document.getElementById('c-req-row').classList.remove('hidden');
+            }
+
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+            showList();
+        }
+
+        function showList() {
+            var box = document.getElementById('items');
+            box.innerHTML = '';
+            for (var i = 0; i < data.length; i++) {
+                var r = data[i];
+                var div = document.createElement('div');
+                div.className = 'reservation-item';
+                div.innerHTML = '<h4>' + r.name + '</h4><p>' + r.date + ' ' + r.time + ' - ' + r.people + '</p><p>電話: ' + r.phone + '</p><span class="badge">予約済</span>';
+                box.appendChild(div);
+            }
+            document.getElementById('list').classList.remove('hidden');
+        }
+
+        function reset() {
+            document.getElementById('date').value = '';
+            document.getElementById('time').value = '';
+            document.getElementById('people').selectedIndex = 0;
+            document.getElementById('name').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('requests').value = '';
+            document.getElementById('c-email-row').classList.add('hidden');
+            document.getElementById('c-req-row').classList.add('hidden');
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
